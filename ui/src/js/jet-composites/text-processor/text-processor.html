@@ -1,0 +1,11 @@
+<div class="text-processor">
+    Please select a text file
+ 
+    <form action="http://localhost:5000/api/textprocess" method="post" enctype="multipart/form-data"         
+        onsubmit=" AJAXSubmit(this); return false;">
+        file:
+        <input type="file" multiple name="file">
+        <input type="submit" value="Submit" />
+    </form>    
+ </div>
+<hr />

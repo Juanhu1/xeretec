@@ -1,0 +1,20 @@
+{
+    "name": "page-header",
+    "description": "Page Header Component.",
+    "version": "7.0.1",
+    "jetVersion": ">=7.0.1 <8.0.0",
+    "properties": {
+        "toggleDrawer": {
+            "description": "Function to toggle the drawer",
+            "type": "function"
+        },
+        "drawerParams": {
+            "description": "Drawer Properties",
+            "type": "object"
+        },
+        "navDataProvider": {
+            "description": "Navigation Data Provider",
+            "type": "object"
+        }
+    }
+}

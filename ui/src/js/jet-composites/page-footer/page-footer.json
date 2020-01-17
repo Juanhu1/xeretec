@@ -1,0 +1,6 @@
+{
+  "name": "page-footer",
+  "description": "Page Footer Component.",
+  "version": "7.0.1",
+  "jetVersion": ">=7.0.1 <8.0.0"
+}

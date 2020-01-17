@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<!--
+ Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ The Universal Permissive License (UPL), Version 1.0
+ -->
+
+<!-- ************************ IMPORTANT INFORMATION ************************************
+  This web navigation drawer template is provided as an example of how to configure
+  a JET web application with a navigation drawer as a single page application
+  using ojRouter and oj-module.  It contains the Oracle JET framework and a default
+  requireJS configuration file to show how JET can be setup in a common application.
+  This project template can be used in conjunction with demo code from the JET
+  website to test JET component behavior and interactions.
+
+  Any CSS styling with the prefix "demo-" is for demonstration only and is not
+  provided as part of the JET framework.
+
+  Please see the demos under Cookbook/Patterns/App Shell: Web and the CSS documentation
+  under Support/API Docs/Non-Component Styling on the JET website for more information on how to use 
+  the best practice patterns shown in this template.
+
+  Aria Landmark role attributes are added to the different sections of the application
+  for accessibility compliance. If you change the type of content for a specific
+  section from what is defined, you should also change the role value for that
+  section to represent the appropriate content type.
+  ***************************** IMPORTANT INFORMATION ************************************ -->
+<html lang="en-us">
+<head>
+    <title>Oracle JET Starter Template - Web Nav Drawer</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1">
+    <link rel="icon" href="css/images/favicon.ico" type="image/x-icon" />
+
+    <!-- This is the main css file for the default Alta theme -->
+    <!-- injector:theme -->
+    <link rel="stylesheet" href="js/libs/@oracle/oraclejet/dist/css/alta/oj-alta-min.css" type="text/css" />
+    <!-- endinjector -->
+    <!-- This contains icon fonts used by the starter template -->
+    <link rel="stylesheet" href="css/demo-alta-site-min.css" type="text/css" />
+
+    <!-- This is where you would add any app specific styling -->
+    <link rel="stylesheet" href="css/app.css" type="text/css" />
+
+    <script type="text/javascript" data-main='js/require-config' src="js/libs/requirejs/require.js"></script>
+
+</head>
+<body class="oj-web-applayout-body">
+    <!-- Template for rendering navigation items shared between nav bar and nav list -->
+    <script type="text/html" id="navTemplate">
+        <li>
+            <a href="#">
+                <span :class="[[$data['iconClass']]]"></span>
+                <oj-bind-text value="[[$data['name']]]"></oj-bind-text>
+            </a>
+        </li>
+    </script>
+
+    <div id="globalBody" class="oj-offcanvas-outer-wrapper oj-offcanvas-page">
+        <!--
+           ** Oracle JET V7.0.1 web application navigation drawer pattern.
+           ** Please see the demos under Cookbook/Patterns/App Shell: Web
+           ** and the CSS documentation under Support/API Docs/Non-Component Styling
+           ** on the JET website for more information on how to use this pattern.
+           ** The off-canvas section is used when the browser is resized to a smaller media
+           ** query size for a phone format and hidden until a user clicks on
+           ** the header hamburger icon.
+        -->
+        <div id="navDrawer" role="navigation" class="oj-contrast-marker oj-web-applayout-offcanvas oj-offcanvas-start">
+            <oj-navigation-list id="navDrawerList" data="[[navDataProvider]]"
+                                edge="start"
+                                item.renderer="[[KnockoutTemplateUtils.getRenderer('navTemplate', true)]]"
+                                on-click="[[toggleDrawer]]"
+                                selection="{{router.stateId}}">
+            </oj-navigation-list>
+        </div>
+        <div id="pageContent" class="oj-web-applayout-page">
+            <page-header toggle-drawer="[[toggleDrawer]]" nav-data-provider="[[navDataProvider]]" drawer-params="[[drawerParams]]"></page-header>
+            <oj-module role="main"   config="[[moduleConfig]]">
+            </oj-module>
+            <div id="insert_pos" style="padding:20px;"></div>
+            <page-footer></page-footer>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+
+    "use strict";
+
+    /*\
+    |*|
+    |*|  :: XMLHttpRequest.prototype.sendAsBinary() Polyfill ::
+    |*|
+    |*|  https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#sendAsBinary()
+    \*/
+
+    if (!XMLHttpRequest.prototype.sendAsBinary) {
+        XMLHttpRequest.prototype.sendAsBinary = function (sData) {
+            var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
+            for (var nIdx = 0; nIdx < nBytes; nIdx++) {
+                ui8Data[nIdx] = sData.charCodeAt(nIdx) & 0xff;
+            }
+            /* send as ArrayBufferView...: */
+            this.send(ui8Data);
+            /* ...or as ArrayBuffer (legacy)...: this.send(ui8Data.buffer); */
+        };
+    }
+
+    /*\
+    |*|
+    |*|  :: AJAX Form Submit Framework ::
+    |*|
+    |*|  https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest/Using_XMLHttpRequest
+    |*|
+    |*|  This framework is released under the GNU Public License, version 3 or later.
+    |*|  https://www.gnu.org/licenses/gpl-3.0-standalone.html
+    |*|
+    |*|  Syntax:
+    |*|
+    |*|   AJAXSubmit(HTMLFormElement);
+    \*/
+
+    var AJAXSubmit = (function () {
+        var callback;
+        function ajaxSuccess() {
+            /* console.log("AJAXSubmit - Success!"); */
+            console.log(this.responseText);
+            if (callback) callback(this.response);
+            var res = JSON.parse(this.response);
+            $("#insert_pos").empty();
+            $("#insert_pos").append("Total number of Words: " + res.totalNumberOfWords);
+            $("#insert_pos").append("<br>");
+            $("#insert_pos").append("Total number of Chars: " + res.totalNumberOfChars);
+            $("#insert_pos").append("<br>");
+            $("#insert_pos").append("Avarage Word Length: " + res.avarageWordLength);
+            $("#insert_pos").append("<br>");
+            var s = "";
+            for (var i = 0; i < res.mostFrequentWords.length; i++) {
+                s += res.mostFrequentWords[i].key + " (" + res.mostFrequentWords[i].value + "), ";
+            }
+            $("#insert_pos").append("Most frequent words: " + s);
+            $("#insert_pos").append("<br>");
+            s = "";
+            for (var i = 0; i < res.leastFrequentChars.length; i++) {
+                s += res.leastFrequentChars[i].key + " (" + res.leastFrequentChars[i].value + "), ";
+            }
+            $("#insert_pos").append("Least frequent chars: " + s);
+            $("#insert_pos").append("<br>");
+
+            /* you can get the serialized data through the "submittedData" custom property: */
+            /* console.log(JSON.stringify(this.submittedData)); */
+        }
+
+        function submitData(oData) {
+            /* the AJAX request... */
+            var oAjaxReq = new XMLHttpRequest();
+            oAjaxReq.submittedData = oData;
+            oAjaxReq.onload = ajaxSuccess;
+            if (oData.technique === 0) {
+                /* method is GET */
+                oAjaxReq.open("get", oData.receiver.replace(/(?:\?.*)?$/,
+                    oData.segments.length > 0 ? "?" + oData.segments.join("&") : ""), true);
+                oAjaxReq.send(null);
+            } else {
+                /* method is POST */
+                oAjaxReq.open("post", oData.receiver, true);
+                if (oData.technique === 3) {
+                    /* enctype is multipart/form-data */
+                    var sBoundary = "---------------------------" + Date.now().toString(16);
+                    oAjaxReq.setRequestHeader("Content-Type", "multipart\/form-data; boundary=" + sBoundary);
+                    oAjaxReq.sendAsBinary("--" + sBoundary + "\r\n" +
+                        oData.segments.join("--" + sBoundary + "\r\n") + "--" + sBoundary + "--\r\n");
+                } else {
+                    /* enctype is application/x-www-form-urlencoded or text/plain */
+                    oAjaxReq.setRequestHeader("Content-Type", oData.contentType);
+                    oAjaxReq.send(oData.segments.join(oData.technique === 2 ? "\r\n" : "&"));
+                }
+            }
+        }
+
+        function processStatus(oData) {
+            if (oData.status > 0) { return; }
+            /* the form is now totally serialized! do something before sending it to the server... */
+            /* doSomething(oData); */
+            /* console.log("AJAXSubmit - The form is now serialized. Submitting..."); */
+            submitData(oData);
+        }
+
+        function pushSegment(oFREvt) {
+            this.owner.segments[this.segmentIdx] += oFREvt.target.result + "\r\n";
+            this.owner.status--;
+            processStatus(this.owner);
+        }
+
+        function plainEscape(sText) {
+            /* How should I treat a text/plain form encoding?
+               What characters are not allowed? this is what I suppose...: */
+            /* "4\3\7 - Einstein said E=mc2" ----> "4\\3\\7\ -\ Einstein\ said\ E\=mc2" */
+            return sText.replace(/[\s\=\\]/g, "\\$&");
+        }
+
+        function SubmitRequest(oTarget) {
+            var nFile, sFieldType, oField, oSegmReq, oFile, bIsPost = oTarget.method.toLowerCase() === "post";
+            /* console.log("AJAXSubmit - Serializing form..."); */
+            this.contentType = bIsPost && oTarget.enctype ? oTarget.enctype : "application\/x-www-form-urlencoded";
+            this.technique = bIsPost ?
+                this.contentType === "multipart\/form-data" ? 3 : this.contentType === "text\/plain" ? 2 : 1 : 0;
+            this.receiver = oTarget.action;
+            this.status = 0;
+            this.segments = [];
+            var fFilter = this.technique === 2 ? plainEscape : escape;
+            for (var nItem = 0; nItem < oTarget.elements.length; nItem++) {
+                oField = oTarget.elements[nItem];
+                if (!oField.hasAttribute("name")) { continue; }
+                sFieldType = oField.nodeName.toUpperCase() === "INPUT" ? oField.getAttribute("type").toUpperCase() : "TEXT";
+                if (sFieldType === "FILE" && oField.files.length > 0) {
+                    if (this.technique === 3) {
+                    /* enctype is multipart/form-data */
+                        for (nFile = 0; nFile < oField.files.length; nFile++) {
+                            oFile = oField.files[nFile];
+                            oSegmReq = new FileReader();
+                            /* (custom properties:) */
+                            oSegmReq.segmentIdx = this.segments.length;
+                            oSegmReq.owner = this;
+                            /* (end of custom properties) */
+                            oSegmReq.onload = pushSegment;
+                            this.segments.push("Content-Disposition: form-data; name=\"" +
+                                oField.name + "\"; filename=\"" + oFile.name +
+                                "\"\r\nContent-Type: " + oFile.type + "\r\n\r\n");
+                            this.status++;
+                            oSegmReq.readAsBinaryString(oFile);
+                        }
+                    } else {
+                        /* enctype is application/x-www-form-urlencoded or text/plain or
+                           method is GET: files will not be sent! */
+                        for (nFile = 0; nFile < oField.files.length;
+                            this.segments.push(fFilter(oField.name) + "=" + fFilter(oField.files[nFile++].name)));
+                    }
+                } else if ((sFieldType !== "RADIO" && sFieldType !== "CHECKBOX") || oField.checked) {
+                    /* NOTE: this will submit _all_ submit buttons. Detecting the correct one is non-trivial. */
+                    /* field type is not FILE or is FILE but is empty */
+                    this.segments.push(
+                        this.technique === 3 ? /* enctype is multipart/form-data */
+                            "Content-Disposition: form-data; name=\"" + oField.name + "\"\r\n\r\n" + oField.value + "\r\n"
+                            : /* enctype is application/x-www-form-urlencoded or text/plain or method is GET */
+                            fFilter(oField.name) + "=" + fFilter(oField.value)
+                    );
+                }
+            }
+            processStatus(this);
+        }
+
+        return function (oFormElement, c) {
+            callback = c;
+            if (!oFormElement.action) { return; }
+            new SubmitRequest(oFormElement);
+        };
+
+    })();
+
+</script>
+</html>

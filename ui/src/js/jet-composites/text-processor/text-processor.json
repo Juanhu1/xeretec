@@ -1,0 +1,6 @@
+{
+  "name": "text-processor",
+  "description": "Text Processor",
+  "version": "1.0.0",
+  "jetVersion": ">=7.0.1 <8.0.0"  
+}

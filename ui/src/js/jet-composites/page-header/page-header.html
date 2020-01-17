@@ -1,0 +1,30 @@
+<!--
+** Oracle JET V7.0.1 web application header pattern.
+** Please see the demos under Cookbook/Patterns/App Shell: Web
+** and the CSS documentation under Support/API Docs/Non-Component Styling
+** on the JET website for more information on how to use this pattern.
+-->
+<header role="banner" class="oj-web-applayout-header">
+    <div class="oj-web-applayout-max-width oj-flex-bar oj-sm-align-items-center">
+        <!-- Offcanvas toggle button -->
+        <div class="oj-flex-bar-start oj-md-hide">
+        <oj-button id="drawerToggleButton" class="oj-button-lg" on-oj-action="[[toggleDrawer]]" chroming="half" display="icons">
+            <span slot="startIcon" class="oj-web-applayout-offcanvas-icon"></span>
+            <span>Application Navigation</span>
+        </oj-button>
+        </div>
+        <div class="oj-flex-bar-middle oj-sm-align-items-baseline">
+        <h1 title="Application Name"><oj-bind-text value="[[appName]]"></oj-bind-text></h1>
+        </div>
+        <div class="oj-flex-bar-end">
+        </div>
+    </div>
+    <div role="navigation" class="oj-web-applayout-max-width oj-web-applayout-navbar">
+        <oj-navigation-list id="navTabBar" class="oj-sm-only-hide oj-md-condense oj-md-justify-content-flex-end"
+                            data="[[navDataProvider]]"
+                            edge="top"
+                            item.renderer="[[KnockoutTemplateUtils.getRenderer('navTemplate', true)]]"
+                            selection="{{router.stateId}}">
+        </oj-navigation-list>
+    </div>
+</header>
