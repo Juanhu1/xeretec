@@ -58,7 +58,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-clean": "^0.3.2",
     "gulplog": "^1.0.0",
-    "node-sass": "^4.5.2",
+    "node-sass": "^4.13.1",
     "phantomjs-prebuilt": "^2.1.14",
     "proxy-middleware": "^0.15.0",
     "http-proxy-middleware": "^0.17.4",
